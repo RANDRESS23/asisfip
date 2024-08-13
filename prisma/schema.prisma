@@ -11,6 +11,8 @@ model Ciclos {
   id_ciclo    Int        @id @default(autoincrement())
   ciclo       String     @db.VarChar(20) @unique
 
+  clases      Clases[]
+
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
 }
@@ -19,6 +21,9 @@ model Jornadas {
   id_jornada   Int        @id @default(autoincrement())
   jornada      String     @db.VarChar(20) @unique
 
+  grupos       Grupos[]
+  clases       Clases[]
+
   created_at   DateTime   @default(now())
   updated_at   DateTime   @updatedAt
 }
@@ -26,6 +31,9 @@ model Jornadas {
 model Sedes {
   id_sede     Int        @id @default(autoincrement())
   sede        String     @db.VarChar(20) @unique
+
+  clases      Clases[]
+  salones     Salones[]
 
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
@@ -89,7 +97,7 @@ model Programas {
   id_programa    Int         @id @default(autoincrement())
   programa       String      @db.VarChar(100) @unique
 
-  id_facultad    Int         @unique
+  id_facultad    Int         
   facultad       Facultades  @relation(fields: [id_facultad], references: [id_facultad], onDelete: Cascade)
 
   estudiantes    Estudiantes[]
@@ -100,13 +108,49 @@ model Programas {
   @@index([id_facultad])
 }
 
+model Grupos {
+  id_grupo    Int         @id @default(autoincrement())
+  grupo       String      @db.VarChar(20) @unique
+
+  id_jornada  Int         
+  jornada     Jornadas    @relation(fields: [id_jornada], references: [id_jornada], onDelete: Cascade)
+
+  clases      Clases[]
+
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+}
+
+model Periodos {
+  id_periodo    Int         @id @default(autoincrement())
+  periodo       String      @db.VarChar(20) @unique
+
+  clases        Clases[]
+
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+}
+
+model Salones {
+  id_salon      Int         @id @default(autoincrement())
+  salon         String      @db.VarChar(20) @unique
+
+  id_sede       Int         
+  sede          Sedes       @relation(fields: [id_sede], references: [id_sede], onDelete: Cascade)
+
+  clases        Clases[]
+
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+}
+
 model Estados_Estudiantes {
   id_estado_estudiante  Int           @id @default(autoincrement())
   
   id_estudiante         Int           @unique
   estudiante            Estudiantes   @relation(fields: [id_estudiante], references: [id_estudiante], onDelete: Cascade)
 
-  id_estado             Int           @unique
+  id_estado             Int           
   estado                Estados       @relation(fields: [id_estado], references: [id_estado], onDelete: Cascade)
 
   created_at            DateTime      @default(now())
@@ -122,7 +166,7 @@ model Estados_Profesores {
   id_profesor           Int           @unique
   empleado              Profesores    @relation(fields: [id_profesor], references: [id_profesor], onDelete: Cascade)
 
-  id_estado             Int           @unique
+  id_estado             Int           
   estado                Estados       @relation(fields: [id_estado], references: [id_estado], onDelete: Cascade)
 
   created_at            DateTime      @default(now())
@@ -139,24 +183,24 @@ model Estudiantes {
   primer_apellido             String          @db.VarChar(50)
   segundo_apellido            String?         @db.VarChar(50)
   
-  id_tipo_documento           Int             @unique
+  id_tipo_documento           Int             
   tipo_documento              Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
 
   numero_documento            String          @db.VarChar(20) @unique
 
-  id_programa                 Int             @unique
+  id_programa                 Int             
   programa                    Programas       @relation(fields: [id_programa], references: [id_programa], onDelete: Cascade)
 
   correo_institucional        String          @db.VarChar(50) @unique
   clave                       String 
 
-  id_sexo                     Int             @unique
+  id_sexo                     Int             
   sexo                        Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
 
   celular                     String          @db.VarChar(20) @unique
   saldo                       Int             @default(0)
 
-  id_rol                      Int             @unique
+  id_rol                      Int             
   rol                         Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
 
   estados_estudiantes         Estados_Estudiantes[]
@@ -177,7 +221,7 @@ model Profesores {
   primer_apellido        String          @db.VarChar(50)
   segundo_apellido       String?         @db.VarChar(50)
   
-  id_tipo_documento      Int             @unique
+  id_tipo_documento      Int             
   tipo_documento         Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
 
   numero_documento       String          @db.VarChar(20) @unique
@@ -185,15 +229,16 @@ model Profesores {
   correo_institucional   String          @db.VarChar(50) @unique
   clave                  String 
 
-  id_sexo                Int             @unique
+  id_sexo                Int             
   sexo                   Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
 
   celular                String          @db.VarChar(20) @unique
 
-  id_rol                 Int             @unique
+  id_rol                 Int             
   rol                    Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
 
   estados_profesores     Estados_Profesores[]
+  clases                 Clases[]
 
   created_at             DateTime        @default(now())
   updated_at             DateTime        @updatedAt
@@ -202,3 +247,51 @@ model Profesores {
   @@index([id_sexo])
   @@index([id_rol])
 }
+
+model Clases {
+  id_clase               Int             @id @default(autoincrement())
+  clase                  String          @db.VarChar(100)
+
+  id_profesor            Int             
+  profesor               Profesores      @relation(fields: [id_profesor], references: [id_profesor], onDelete: Cascade)
+
+  id_grupo               Int             
+  grupo                  Grupos          @relation(fields: [id_grupo], references: [id_grupo], onDelete: Cascade)
+  
+  id_sede                Int             
+  sede                   Sedes           @relation(fields: [id_sede], references: [id_sede], onDelete: Cascade)
+  
+  id_ciclo               Int             
+  ciclo                  Ciclos          @relation(fields: [id_ciclo], references: [id_ciclo], onDelete: Cascade)
+  
+  id_periodo             Int             
+  periodo                Periodos        @relation(fields: [id_periodo], references: [id_periodo], onDelete: Cascade)
+  
+  id_jornada             Int         
+  jornada                Jornadas        @relation(fields: [id_jornada], references: [id_jornada], onDelete: Cascade)
+
+  id_salon               Int             
+  salon                  Salones         @relation(fields: [id_salon], references: [id_salon], onDelete: Cascade)
+
+  fecha_inicio           DateTime        @db.Date
+  fecha_fin              DateTime        @db.Date
+  hora_inicio            DateTime        @db.Time
+  hora_fin               DateTime        @db.Time
+  
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+}
+
+// model Horarios_Clase {
+//   id_horario_clase            Int             @id @default(autoincrement())
+
+//   created_at             DateTime        @default(now())
+//   updated_at             DateTime        @updatedAt
+// }
+
+// model Asistencias {
+//   id_asistencia            Int             @id @default(autoincrement())
+
+//   created_at             DateTime        @default(now())
+//   updated_at             DateTime        @updatedAt
+// }
