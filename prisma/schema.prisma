@@ -17,6 +17,16 @@ model Ciclos {
   updated_at  DateTime   @updatedAt
 }
 
+model Dias_Clase {
+  id_dia_clase      Int        @id @default(autoincrement())
+  dia_clase         String     @db.VarChar(20) @unique
+
+  horarios_clase    Horarios_Clase[]
+
+  created_at        DateTime   @default(now())
+  updated_at        DateTime   @updatedAt
+}
+
 model Jornadas {
   id_jornada   Int        @id @default(autoincrement())
   jornada      String     @db.VarChar(20) @unique
@@ -119,6 +129,8 @@ model Grupos {
 
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
+
+  @@index([id_jornada])
 }
 
 model Periodos {
@@ -142,6 +154,8 @@ model Salones {
 
   created_at    DateTime    @default(now())
   updated_at    DateTime    @updatedAt
+
+  @@index([id_sede])
 }
 
 model Estados_Estudiantes {
@@ -204,6 +218,8 @@ model Estudiantes {
   rol                         Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
 
   estados_estudiantes         Estados_Estudiantes[]
+  estudiante_clases           Estudiante_Clases[]
+  asistencias_profesores      Asistencias_Estudiantes[]
 
   created_at                  DateTime        @default(now())
   updated_at                  DateTime        @updatedAt
@@ -215,33 +231,34 @@ model Estudiantes {
 }
 
 model Profesores {
-  id_profesor            Int             @id @default(autoincrement())
-  primer_nombre          String          @db.VarChar(50)
-  segundo_nombre         String?         @db.VarChar(50)
-  primer_apellido        String          @db.VarChar(50)
-  segundo_apellido       String?         @db.VarChar(50)
+  id_profesor             Int             @id @default(autoincrement())
+  primer_nombre           String          @db.VarChar(50)
+  segundo_nombre          String?         @db.VarChar(50)
+  primer_apellido         String          @db.VarChar(50)
+  segundo_apellido        String?         @db.VarChar(50)
   
-  id_tipo_documento      Int             
-  tipo_documento         Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
+  id_tipo_documento       Int             
+  tipo_documento          Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
 
-  numero_documento       String          @db.VarChar(20) @unique
+  numero_documento        String          @db.VarChar(20) @unique
 
-  correo_institucional   String          @db.VarChar(50) @unique
-  clave                  String 
+  correo_institucional    String          @db.VarChar(50) @unique
+  clave                   String 
 
-  id_sexo                Int             
-  sexo                   Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
+  id_sexo                 Int             
+  sexo                    Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
 
-  celular                String          @db.VarChar(20) @unique
+  celular                 String          @db.VarChar(20) @unique
 
-  id_rol                 Int             
-  rol                    Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
+  id_rol                  Int             
+  rol                     Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
 
-  estados_profesores     Estados_Profesores[]
-  clases                 Clases[]
+  estados_profesores      Estados_Profesores[]
+  clases                  Clases[]
+  asistencias_profesores  Asistencias_Profesores[]
 
-  created_at             DateTime        @default(now())
-  updated_at             DateTime        @updatedAt
+  created_at              DateTime        @default(now())
+  updated_at              DateTime        @updatedAt
 
   @@index([id_tipo_documento])
   @@index([id_sexo])
@@ -249,49 +266,119 @@ model Profesores {
 }
 
 model Clases {
-  id_clase               Int             @id @default(autoincrement())
-  clase                  String          @db.VarChar(100)
+  id_clase                 Int             @id @default(autoincrement())
+  clase                    String          @db.VarChar(100)
+
+  id_profesor              Int             
+  profesor                 Profesores      @relation(fields: [id_profesor], references: [id_profesor], onDelete: Cascade)
+
+  id_grupo                 Int             
+  grupo                    Grupos          @relation(fields: [id_grupo], references: [id_grupo], onDelete: Cascade)
+  
+  id_sede                  Int             
+  sede                     Sedes           @relation(fields: [id_sede], references: [id_sede], onDelete: Cascade)
+  
+  id_ciclo                 Int             
+  ciclo                    Ciclos          @relation(fields: [id_ciclo], references: [id_ciclo], onDelete: Cascade)
+  
+  id_periodo               Int             
+  periodo                  Periodos        @relation(fields: [id_periodo], references: [id_periodo], onDelete: Cascade)
+  
+  id_jornada               Int         
+  jornada                  Jornadas        @relation(fields: [id_jornada], references: [id_jornada], onDelete: Cascade)
+
+  id_salon                 Int             
+  salon                    Salones         @relation(fields: [id_salon], references: [id_salon], onDelete: Cascade)
+
+  fecha_inicio             DateTime        @db.Date
+  fecha_fin                DateTime        @db.Date
+  
+  created_at               DateTime        @default(now())
+  updated_at               DateTime        @updatedAt
+
+  horarios_clase           Horarios_Clase[]
+  estudiante_clases        Estudiante_Clases[]
+  asistencias_estudiantes  Asistencias_Estudiantes[]
+  asistencias_profesores   Asistencias_Profesores[]
+
+  @@index([id_profesor])
+  @@index([id_grupo])
+  @@index([id_sede])
+  @@index([id_ciclo])
+  @@index([id_periodo])
+  @@index([id_jornada])
+  @@index([id_salon])
+}
+
+model Horarios_Clase {
+  id_horario_clase       Int             @id @default(autoincrement())
+
+  id_clase               Int             @unique
+  clase                  Clases          @relation(fields: [id_clase], references: [id_clase], onDelete: Cascade)
+
+  id_dia_clase           Int             
+  dia_clase              Dias_Clase      @relation(fields: [id_dia_clase], references: [id_dia_clase], onDelete: Cascade)
+
+  hora_inicio            DateTime        @db.Time
+  hora_fin               DateTime        @db.Time
+
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+
+  @@index([id_clase])
+  @@index([id_dia_clase])
+}
+
+model Estudiante_Clases {
+  id_estudiante_clase    Int             @id @default(autoincrement())
+
+  id_estudiante          Int             
+  estudiante             Estudiantes     @relation(fields: [id_estudiante], references: [id_estudiante], onDelete: Cascade)
+
+  id_clase               Int             
+  clase                  Clases          @relation(fields: [id_clase], references: [id_clase], onDelete: Cascade)
+
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+
+  @@index([id_estudiante])
+  @@index([id_clase])
+}
+
+model Asistencias_Estudiantes {
+  id_asistencia          Int             @id @default(autoincrement())
+
+  id_clase               Int             
+  clase                  Clases          @relation(fields: [id_clase], references: [id_clase], onDelete: Cascade)
+
+  id_estudiante          Int             
+  estudiante             Estudiantes     @relation(fields: [id_estudiante], references: [id_estudiante], onDelete: Cascade)
+
+  fecha_dia              DateTime        @db.Date
+  hora_entrada           DateTime        @db.Time
+
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+
+  @@index([id_clase])
+  @@index([id_estudiante])
+}
+
+model Asistencias_Profesores {
+  id_asistencia          Int             @id @default(autoincrement())
+
+  id_clase               Int             
+  clase                  Clases          @relation(fields: [id_clase], references: [id_clase], onDelete: Cascade)
 
   id_profesor            Int             
   profesor               Profesores      @relation(fields: [id_profesor], references: [id_profesor], onDelete: Cascade)
 
-  id_grupo               Int             
-  grupo                  Grupos          @relation(fields: [id_grupo], references: [id_grupo], onDelete: Cascade)
-  
-  id_sede                Int             
-  sede                   Sedes           @relation(fields: [id_sede], references: [id_sede], onDelete: Cascade)
-  
-  id_ciclo               Int             
-  ciclo                  Ciclos          @relation(fields: [id_ciclo], references: [id_ciclo], onDelete: Cascade)
-  
-  id_periodo             Int             
-  periodo                Periodos        @relation(fields: [id_periodo], references: [id_periodo], onDelete: Cascade)
-  
-  id_jornada             Int         
-  jornada                Jornadas        @relation(fields: [id_jornada], references: [id_jornada], onDelete: Cascade)
+  fecha_dia              DateTime        @db.Date
+  hora_entrada           DateTime        @db.Time
 
-  id_salon               Int             
-  salon                  Salones         @relation(fields: [id_salon], references: [id_salon], onDelete: Cascade)
-
-  fecha_inicio           DateTime        @db.Date
-  fecha_fin              DateTime        @db.Date
-  hora_inicio            DateTime        @db.Time
-  hora_fin               DateTime        @db.Time
-  
   created_at             DateTime        @default(now())
   updated_at             DateTime        @updatedAt
+
+  @@index([id_clase])
+  @@index([id_profesor])
 }
-
-// model Horarios_Clase {
-//   id_horario_clase            Int             @id @default(autoincrement())
-
-//   created_at             DateTime        @default(now())
-//   updated_at             DateTime        @updatedAt
-// }
-
-// model Asistencias {
-//   id_asistencia            Int             @id @default(autoincrement())
-
-//   created_at             DateTime        @default(now())
-//   updated_at             DateTime        @updatedAt
-// }
