@@ -3,6 +3,202 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Ciclos {
+  id_ciclo    Int        @id @default(autoincrement())
+  ciclo       String     @db.VarChar(20) @unique
+
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model Jornadas {
+  id_jornada   Int        @id @default(autoincrement())
+  jornada      String     @db.VarChar(20) @unique
+
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+}
+
+model Sedes {
+  id_sede     Int        @id @default(autoincrement())
+  sede        String     @db.VarChar(20) @unique
+
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model Estados {
+  id_estado             Int                   @id @default(autoincrement())
+  estado                String                @db.VarChar(20) @unique
+
+  estados_estudiantes   Estados_Estudiantes[]
+  estados_profesores    Estados_Profesores[]
+
+  created_at            DateTime              @default(now())
+  updated_at            DateTime              @updatedAt
+}
+
+model Roles {
+  id_rol            Int           @id @default(autoincrement())
+  rol               String        @db.VarChar(20) @unique
+
+  estudiantes       Estudiantes[]
+  profesores        Profesores[]
+
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+}
+
+model Sexos {
+  id_sexo          Int            @id @default(autoincrement())
+  sexo             String         @db.VarChar(20) @unique
+
+  estudiantes      Estudiantes[]
+  profesores       Profesores[]
+
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+}
+
+model Tipos_Documento {
+  id_tipo_documento Int           @id @default(autoincrement())
+  tipo_documento    String        @db.VarChar(50) @unique
+
+  estudiantes       Estudiantes[]
+  profesores        Profesores[]
+
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+}
+
+model Facultades {
+  id_facultad       Int         @id @default(autoincrement())
+  facultad          String      @db.VarChar(100) @unique
+
+  programas         Programas[]
+
+  created_at        DateTime    @default(now())
+  updated_at        DateTime    @updatedAt
+}
+
+model Programas {
+  id_programa    Int         @id @default(autoincrement())
+  programa       String      @db.VarChar(100) @unique
+
+  id_facultad    Int         @unique
+  facultad       Facultades  @relation(fields: [id_facultad], references: [id_facultad], onDelete: Cascade)
+
+  estudiantes    Estudiantes[]
+
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  @@index([id_facultad])
+}
+
+model Estados_Estudiantes {
+  id_estado_estudiante  Int           @id @default(autoincrement())
+  
+  id_estudiante         Int           @unique
+  estudiante            Estudiantes   @relation(fields: [id_estudiante], references: [id_estudiante], onDelete: Cascade)
+
+  id_estado             Int           @unique
+  estado                Estados       @relation(fields: [id_estado], references: [id_estado], onDelete: Cascade)
+
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  @@index([id_estudiante])
+  @@index([id_estado])
+}
+
+model Estados_Profesores {
+  id_estado_profesor    Int           @id @default(autoincrement())
+  
+  id_profesor           Int           @unique
+  empleado              Profesores    @relation(fields: [id_profesor], references: [id_profesor], onDelete: Cascade)
+
+  id_estado             Int           @unique
+  estado                Estados       @relation(fields: [id_estado], references: [id_estado], onDelete: Cascade)
+
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  @@index([id_profesor])
+  @@index([id_estado])
+}
+
+model Estudiantes {
+  id_estudiante               Int             @id @default(autoincrement())
+  primer_nombre               String          @db.VarChar(50)
+  segundo_nombre              String?         @db.VarChar(50)
+  primer_apellido             String          @db.VarChar(50)
+  segundo_apellido            String?         @db.VarChar(50)
+  
+  id_tipo_documento           Int             @unique
+  tipo_documento              Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
+
+  numero_documento            String          @db.VarChar(20) @unique
+
+  id_programa                 Int             @unique
+  programa                    Programas       @relation(fields: [id_programa], references: [id_programa], onDelete: Cascade)
+
+  correo_institucional        String          @db.VarChar(50) @unique
+  clave                       String 
+
+  id_sexo                     Int             @unique
+  sexo                        Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
+
+  celular                     String          @db.VarChar(20) @unique
+  saldo                       Int             @default(0)
+
+  id_rol                      Int             @unique
+  rol                         Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
+
+  estados_estudiantes         Estados_Estudiantes[]
+
+  created_at                  DateTime        @default(now())
+  updated_at                  DateTime        @updatedAt
+
+  @@index([id_tipo_documento])
+  @@index([id_programa])
+  @@index([id_sexo])
+  @@index([id_rol])
+}
+
+model Profesores {
+  id_profesor            Int             @id @default(autoincrement())
+  primer_nombre          String          @db.VarChar(50)
+  segundo_nombre         String?         @db.VarChar(50)
+  primer_apellido        String          @db.VarChar(50)
+  segundo_apellido       String?         @db.VarChar(50)
+  
+  id_tipo_documento      Int             @unique
+  tipo_documento         Tipos_Documento @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
+
+  numero_documento       String          @db.VarChar(20) @unique
+
+  correo_institucional   String          @db.VarChar(50) @unique
+  clave                  String 
+
+  id_sexo                Int             @unique
+  sexo                   Sexos           @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
+
+  celular                String          @db.VarChar(20) @unique
+
+  id_rol                 Int             @unique
+  rol                    Roles           @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
+
+  estados_profesores     Estados_Profesores[]
+
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
+
+  @@index([id_tipo_documento])
+  @@index([id_sexo])
+  @@index([id_rol])
 }
