@@ -31,7 +31,6 @@ model Jornadas {
   id_jornada   Int        @id @default(autoincrement())
   jornada      String     @db.VarChar(20) @unique
 
-  grupos       Grupos[]
   clases       Clases[]
 
   created_at   DateTime   @default(now())
@@ -122,15 +121,10 @@ model Grupos {
   id_grupo    Int         @id @default(autoincrement())
   grupo       String      @db.VarChar(20) @unique
 
-  id_jornada  Int         
-  jornada     Jornadas    @relation(fields: [id_jornada], references: [id_jornada], onDelete: Cascade)
-
   clases      Clases[]
 
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
-
-  @@index([id_jornada])
 }
 
 model Periodos {
