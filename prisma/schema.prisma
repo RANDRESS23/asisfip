@@ -63,6 +63,7 @@ model Roles {
   id_rol            Int           @id @default(autoincrement())
   rol               String        @db.VarChar(20) @unique
 
+  administradores   Administradores[]
   estudiantes       Estudiantes[]
   profesores        Profesores[]
 
@@ -74,6 +75,7 @@ model Sexos {
   id_sexo          Int            @id @default(autoincrement())
   sexo             String         @db.VarChar(20) @unique
 
+  administradores  Administradores[]
   estudiantes      Estudiantes[]
   profesores       Profesores[]
 
@@ -85,6 +87,7 @@ model Tipos_Documento {
   id_tipo_documento Int           @id @default(autoincrement())
   tipo_documento    String        @db.VarChar(50) @unique
 
+  administradores   Administradores[]
   estudiantes       Estudiantes[]
   profesores        Profesores[]
 
@@ -182,6 +185,37 @@ model Estados_Profesores {
 
   @@index([id_profesor])
   @@index([id_estado])
+}
+
+model Administradores {
+  id_administrador       Int                  @id @default(autoincrement())
+  primer_nombre          String               @db.VarChar(50)
+  segundo_nombre         String?              @db.VarChar(50)
+  primer_apellido        String               @db.VarChar(50)
+  segundo_apellido       String?              @db.VarChar(50)
+  
+  id_tipo_documento      Int
+  tipo_documento         Tipos_Documento      @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: Cascade)
+
+  numero_documento       String               @db.VarChar(20) @unique
+
+  correo                 String               @db.VarChar(50) @unique
+  clave                  String 
+
+  id_sexo                Int
+  sexo                   Sexos                @relation(fields: [id_sexo], references: [id_sexo], onDelete: Cascade)
+
+  celular                String               @db.VarChar(20) @unique
+
+  id_rol                 Int
+  rol                    Roles                @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade)
+
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  @@index([id_tipo_documento])
+  @@index([id_sexo])
+  @@index([id_rol])
 }
 
 model Estudiantes {
